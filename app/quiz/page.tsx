@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Mic, MicOff, Volume2 } from "lucide-react";
-import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Mic, MicOff, Volume2 } from 'lucide-react';
+import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { toast } from 'sonner';
 
 interface Question {
   id: number;
@@ -17,54 +17,49 @@ interface Question {
 }
 
 const generateQuestions = (): Question[] => {
-  return Array.from({ length: 10 }, (_, i) => {
+  const questions: Question[] = [];
+  for (let i = 0; i < 10; i++) {
     const num1 = Math.floor(Math.random() * 20) + 1;
     const num2 = Math.floor(Math.random() * 20) + 1;
-    return {
+    questions.push({
       id: i,
       question: `What is ${num1} plus ${num2}?`,
       answer: num1 + num2,
-    };
-  });
+    });
+  }
+  return questions;
 };
 
 export default function QuizPage() {
   const [questions] = useState(generateQuestions);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useLocalStorage("quiz-high-score", 0);
+  const [highScore, setHighScore] = useLocalStorage('quiz-high-score', 0);
   const [isComplete, setIsComplete] = useState(false);
-  const [hasAnswered, setHasAnswered] = useState(false); // Track if the current question has been answered
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleResult = (transcript: string) => {
-    if (hasAnswered) return; // Prevent multiple answers for the same question
-
-    const userAnswer = parseInt(transcript.replace(/\D/g, ""));
+    const userAnswer = parseInt(transcript.replace(/\D/g, ''));
     const isCorrect = userAnswer === questions[currentQuestion].answer;
 
-    setHasAnswered(true); // Mark question as answered
-
     if (isCorrect) {
-      toast.success("Correct answer!", {
-        style: { background: "#10B981", color: "white" },
+      toast.success('Correct answer!', {
+        style: { background: '#10B981', color: 'white' }
       });
-      setScore((prev) => prev + 1);
+      setScore(score + 1);
     } else {
       toast.error(`Incorrect. The answer was ${questions[currentQuestion].answer}`, {
-        style: { background: "#EF4444", color: "white" },
+        style: { background: '#EF4444', color: 'white' }
       });
     }
 
     if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion((prev) => prev + 1);
-        setHasAnswered(false); // Reset for the next question
-      }, 500); // Delay to avoid abrupt UI changes
+      setCurrentQuestion(currentQuestion + 1);
     } else {
-      setTimeout(() => {
-        setIsComplete(true);
-        if (score > highScore) setHighScore(score);
-      }, 500);
+      setIsComplete(true);
+      if (score > highScore) {
+        setHighScore(score);
+      }
     }
   };
 
@@ -73,18 +68,19 @@ export default function QuizPage() {
   });
 
   useEffect(() => {
-    stopListening(); // Ensure the microphone stops listening when moving to the next question
+    if (currentQuestion > 0) {
+      stopListening();  // Ensure stop before moving to the next question
+    }
   }, [currentQuestion, stopListening]);
 
   const resetQuiz = () => {
     setCurrentQuestion(0);
     setScore(0);
     setIsComplete(false);
-    setHasAnswered(false); // Reset answer tracking
   };
 
   const speak = (text: string) => {
-    if ("speechSynthesis" in window) {
+    if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
       window.speechSynthesis.speak(utterance);
     } else {
@@ -97,26 +93,25 @@ export default function QuizPage() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-2xl mx-auto"
+        className="max-w-2xl mx-auto relative"
       >
         <div className="mb-8">
-          <motion.h1
+          <motion.h1 
             className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600"
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
             Math Quiz
           </motion.h1>
-          <Progress
-            value={(currentQuestion / questions.length) * 100}
-            className="mb-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500"
+          <Progress 
+            value={(currentQuestion / questions.length) * 100} 
+            className="mb-2 h-2 bg-gradient-to-r from-blue-500 to-purple-500" 
           />
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Question {currentQuestion + 1} of {questions.length}</span>
             <span className="font-semibold text-primary">Score: {score}</span>
           </div>
         </div>
-
 
         <AnimatePresence mode="wait">
           {!isComplete ? (
@@ -128,6 +123,19 @@ export default function QuizPage() {
               className="space-y-6"
             >
               <Card className="p-6 relative overflow-hidden">
+                {isAnimating && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-primary/10 to-purple-500/10"
+                    animate={{
+                      opacity: [0.5, 1, 0.5],
+                      scale: [1, 1.02, 1],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                    }}
+                  />
+                )}
                 <h2 className="text-2xl font-semibold mb-4 text-primary">
                   {questions[currentQuestion].question}
                 </h2>
@@ -144,9 +152,9 @@ export default function QuizPage() {
                     onClick={isListening ? stopListening : startListening}
                     variant={isListening ? "destructive" : "default"}
                     className={`${
-                      isListening
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-gradient-to-r from-primary to-purple-600 hover:opacity-90"
+                      isListening 
+                        ? 'bg-red-500 hover:bg-red-600' 
+                        : 'bg-gradient-to-r from-primary to-purple-600 hover:opacity-90'
                     } transition-all duration-300`}
                   >
                     {isListening ? (
@@ -160,7 +168,9 @@ export default function QuizPage() {
                     )}
                   </Button>
                 </div>
-                {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
+                {error && (
+                  <p className="text-destructive mt-2 text-sm">{error}</p>
+                )}
               </Card>
             </motion.div>
           ) : (
@@ -170,7 +180,7 @@ export default function QuizPage() {
               className="text-center"
             >
               <Card className="p-6 bg-gradient-to-br from-background to-primary/5">
-                <motion.h2
+                <motion.h2 
                   className="text-3xl font-bold mb-4 text-primary"
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
@@ -178,8 +188,10 @@ export default function QuizPage() {
                   Quiz Complete! 🎉
                 </motion.h2>
                 <p className="text-xl mb-2">Your Score: {score} / {questions.length}</p>
-                <p className="text-muted-foreground mb-6">High Score: {highScore}</p>
-                <Button
+                <p className="text-muted-foreground mb-6">
+                  High Score: {highScore}
+                </p>
+                <Button 
                   onClick={resetQuiz}
                   className="bg-gradient-to-r from-primary to-purple-600 hover:opacity-90"
                 >
