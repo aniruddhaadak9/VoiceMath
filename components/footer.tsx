@@ -31,7 +31,7 @@ export function Footer() {
             </motion.div>
             <span>by</span>
             <a
-              href="https://github.com/your-github-username"
+              href="https://github.com/aniruddhaadak9"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center space-x-1 text-primary hover:underline"
