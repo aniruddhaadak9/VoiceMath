@@ -100,4 +100,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-Feel free to explore, enjoy, and share **VoiceMath**! 🌟🎓
+🌟 Feel free to explore, enjoy, and share **VoiceMath**! 🎓
