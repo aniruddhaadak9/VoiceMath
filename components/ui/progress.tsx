@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
-  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & { value?: number }
+  React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root>
 >(({ className, value = 0, ...props }, ref) => (
   <ProgressPrimitive.Root
     ref={ref}
@@ -19,7 +19,7 @@ const Progress = React.forwardRef<
   >
     <ProgressPrimitive.Indicator
       className="h-full w-full flex-1 bg-primary transition-all"
-      style={{ transform: `translateX(-${100 - value}%)` }} // ensure 'value' is used correctly
+      style={{ transform: `translateX(-${100 - value}%)` }}
     />
   </ProgressPrimitive.Root>
 ));
