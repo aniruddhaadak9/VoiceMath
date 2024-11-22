@@ -1,6 +1,6 @@
-# VoiceMath 🎤➕  
+# 🎤 VoiceMath ➕  
 
-VoiceMath is an interactive and engaging math quiz application designed to improve mental math skills. Using **voice recognition** and **speech synthesis**, users can answer math questions hands-free and enhance their problem-solving abilities in a fun and innovative way. 🚀🎉  
+VoiceMath is an interactive and engaging math quiz application designed to improve mental math skills 🚀. Using **voice recognition** and **speech synthesis**, users can answer math questions hands-free and enhance their problem-solving abilities in a fun and innovative way. 🎉  
 
 ---
 
