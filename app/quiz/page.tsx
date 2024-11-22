@@ -5,17 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Mic, MicOff, Volume2, HelpCircle } from 'lucide-react';
+import { Mic, MicOff, Volume2 } from 'lucide-react';
 import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { toast } from 'sonner';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 
 interface Question {
   id: number;
@@ -36,39 +29,6 @@ const generateQuestions = (): Question[] => {
   }
   return questions;
 };
-
-const Instructions = () => (
-  <Dialog>
-    <DialogTrigger asChild>
-      <Button variant="ghost" size="icon" className="absolute top-4 right-4">
-        <HelpCircle className="h-5 w-5 text-muted-foreground" />
-      </Button>
-    </DialogTrigger>
-    <DialogContent>
-      <DialogHeader>
-        <DialogTitle>How to Play VoiceMath Quiz</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <h4 className="font-semibold text-primary">Voice Controls</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Click the microphone button to start recording</li>
-            <li>Speak your answer clearly (just the number)</li>
-            <li>The microphone will automatically stop after you speak</li>
-          </ul>
-        </div>
-        <div className="space-y-2">
-          <h4 className="font-semibold text-primary">Tips</h4>
-          <ul className="list-disc list-inside space-y-1 text-sm">
-            <li>Use the speaker icon to hear the question</li>
-            <li>Watch the animated wave when speaking</li>
-            <li>Try to complete all 10 questions for a high score</li>
-          </ul>
-        </div>
-      </div>
-    </DialogContent>
-  </Dialog>
-);
 
 export default function QuizPage() {
   const [questions] = useState(generateQuestions);
@@ -108,16 +68,10 @@ export default function QuizPage() {
   });
 
   useEffect(() => {
-    if (isListening) {
-      setIsAnimating(true);
-      // Increase listening time to 5 seconds
-      const timer = setTimeout(() => {
-        stopListening();
-        setIsAnimating(false);
-      }, 5000);
-      return () => clearTimeout(timer);
+    if (currentQuestion > 0) {
+      stopListening();  // Ensure stop before moving to the next question
     }
-  }, [isListening, stopListening]);
+  }, [currentQuestion, stopListening]);
 
   const resetQuiz = () => {
     setCurrentQuestion(0);
@@ -126,8 +80,12 @@ export default function QuizPage() {
   };
 
   const speak = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      toast.error("Speech synthesis not supported in your browser.");
+    }
   };
 
   return (
@@ -137,8 +95,6 @@ export default function QuizPage() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl mx-auto relative"
       >
-        <Instructions />
-        
         <div className="mb-8">
           <motion.h1 
             className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600"
